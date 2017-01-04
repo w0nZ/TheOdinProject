@@ -7,7 +7,7 @@ class TicTacToe
 		@player1 = Player.new(player1, "X")
 		@player2 = Player.new(player2, "O")
 		@turn = @player1
-		self.turn?
+		@gameOver = false
 	end
 
 	def welcome(name1, name2)
@@ -21,57 +21,64 @@ class TicTacToe
 			first, second, third = num
 			if @board.board[first] == "X" && @board.board[second] == "X" && @board.board[third] == "X"
 				winner("X")
+				@gameOver = true
 			elsif @board.board[first] == "O" && @board.board[second] == "O" && @board.board[third] == "O"
 				winner("O")
+				@gameOver = true
 			end
 		end
+		return @gameOver
 	end
 	
 	def winner(sign)
 		if sign == @player1.sign
-			puts "Congrats #{@player1.name}!"
+			puts "########Congrats #{@player1.name}!"
 		elsif sign == @player2.sign
-			puts "Congrats #{@player2.name}!"
+			puts "########Congrats #{@player2.name}!"
 		end
 		exit
 	end
 	
 	def fin?
 	#all fields used up, no winner
-		noWinner = true
-		@board.board.each do |num|
-			if num == "X" && num == "O"
-				noWinner = true
+		@gameOver = true
+		@board.board.each do |value|
+			if value == "X" || value == "O"
+				@gameOver = true
 			else
-				noWinner = false
-				break
+				@gameOver = false
 			end
 		end
-		puts "Finished, no Winner" if noWinner
+		puts "#########Finished, no Winner" if @gameOver
+		return @gameOver
 	end
 	
 	def draw(field)
-		if !empty?(field-1)
-			puts "no valid input, already choosen\n"
-			puts "Please try again\n"
-		elsif @turn == @player1
-			@board.board[field-1] = @player1.sign
-			self.turn = @player2
-		elsif @turn == @player2 
-			@board.board[field-1] = @player2.sign
-			self.turn = @player1
+	#If game has not ended
+	field = field - 1
+		if !@gameOver
+		#If field isn't already used
+			if !empty?(field)
+				puts "no valid input, already choosen\n"
+				puts "Please try again\n"
+			elsif @turn == @player1
+				@board.board[field] = @player1.sign
+				self.turn = @player2
+			elsif @turn == @player2 
+				@board.board[field] = @player2.sign
+				self.turn = @player1
+			end
+			@board.draw
 		end
-		@board.draw
-		win?
-		fin?
-		turn?
 	end
 	
 	def turn?
-		if @turn == @player1
-			puts "It's your turn #{@player1.name}"
-		else
-			puts "It's your turn #{@player2.name}"
+		if !@gameOver
+			if @turn == @player1
+				print "\nIt's your turn #{@player1.name}, make your \"#{@player1.sign}\": "
+			else
+				print "\nIt's your turn #{@player2.name}, make your \"#{@player2.sign}\": "
+			end
 		end
 	end
 	
@@ -108,43 +115,3 @@ class TicTacToe
 	end
 
 end
-
-##Initiate
-#myGame = TicTacToe.new("Ursula", "Domian")
-##Test Game Winning Ursula with "failpick"
-##Ursula
-#myGame.draw(1)
-##Domian failpick
-#myGame.draw(1)
-##Domian again
-#myGame.draw(3)
-##Ursula
-#myGame.draw(4)
-##Domian
-#myGame.draw(5)
-##Ursula
-#myGame.draw(7)
-
-
-drawGame = TicTacToe.new("Ulf", "Aaron")
-#Ulf X
-drawGame.draw(1)
-#Aaron O
-drawGame.draw(5)
-#Ulf X
-drawGame.draw(4)
-#Aaron O
-drawGame.draw(7)
-#Ulf X
-drawGame.draw(8)
-#Aaron O
-drawGame.draw(6)
-#Ulf X
-drawGame.draw(3)
-#Aaron O
-drawGame.draw(2)
-#Ulf X
-drawGame.draw(9)
-
-
-
