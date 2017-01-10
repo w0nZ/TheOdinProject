@@ -3,7 +3,8 @@
 class Mastermind
 	attr_accessor :round, :guess
 
-	def initialize(mode="guess", kiName, humanName)
+	def initialize(mode, kiName, humanName)
+		@cheat = true
 		@mode = mode
 		@board = Board.new
 		@guess = Hash.new
@@ -23,6 +24,16 @@ class Mastermind
 		elsif mode == "code"
 			@code = @human.genCode
 		end
+		#show Cheat code
+		self.cheat if @cheat
+	end
+
+	def cheat
+		##CheatMode
+		print "Secret Code: "
+		@code.each { |x| print "#{x} "}
+		print "\n"
+		##CheatMode
 	end
 	
 	def welcome
@@ -37,6 +48,7 @@ class Mastermind
 			@guess[@round-1] = @human.guess(@round)
 		else
 			puts "not yet implemented"
+			@guess[@round-1] = @ki.guess(@round,@feedback[@round-2],@guess[@round-2])
 		end
 		compare
 		@board.draw(@feedback, @guess, @round)
@@ -45,12 +57,18 @@ class Mastermind
 	
 	def finished? 
 	#Check if finishd
-		if @feedback[@round-2] == ["!", "!", "!", "!"]
+		if @feedback[@round-2] == ["!", "!", "!", "!"] && @mode == "guess"
 			puts "##### Congrats you won #####"
 			return true
-		elsif @round > 12
-			puts "you lost"
+		elsif @feedback[@round-2] == ["!", "!", "!", "!"] && @mode == "code"
+			puts "##### you lost #####"
 			return true
+		elsif @mode == "guess" && @round > 12
+			puts "##### you lost #####"
+			return true		
+		elsif @mode == "code" && @round > 12
+			puts "##### Congrats you won #####"
+			return true	
 		end
 	end
 	
@@ -88,7 +106,7 @@ class Mastermind
 		def guess(round)
 			puts "Hi #{self.name} this is round #{round}"
 			input = enterCode
-			puts "Input: #{input}"
+			#puts "Input: #{input}"
 			inputVal?(input)
 			input.split("")
 		end
@@ -96,7 +114,6 @@ class Mastermind
 		def inputVal?(input)
 			while !(input =~ /[A-F]/ && input.length == 4) do
 				puts "Sorry, valid input is A..F, 4 chars"
-				puts "Please insert your guess:"
 				input = gets.chomp
 			end
 		end
@@ -118,14 +135,33 @@ class Mastermind
 		def genCode
 			code = []
 			for i in 0..3
-				code[i] = (65 + rand(6)).chr
+				code[i] = genChar
 			end
-			##CheatMode
-			print "Secret Code: "
-			code.each { |x| print "#{x} "}
-			print "\n"
-			##CheatMode
 			return code
+		end
+		
+		def genChar
+			(65 + rand(6)).chr
+		end
+		
+		def guess(round, feedback, guess)
+			#give last guess and last feedback must be rewritten
+			puts "KI #{self.name} guess. This is round #{round}"
+			if round > 1
+				kiguess = []
+				i=0
+				feedback.each do |f|
+					if f == "!"
+						kiguess[i] = guess[i]
+					else
+						kiguess[i] = genChar
+					end
+					i += 1
+				end
+			else
+				kiguess = genCode
+			end
+			kiguess
 		end
 	end
 	

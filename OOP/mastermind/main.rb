@@ -7,12 +7,12 @@ load 'mastermind.rb'
 #puts "Please enter your name: "
 #name2 = gets.chomp
 #Get game mode
-#puts "Choose game mode 'guess' or 'code'
-#mode = gets.chomp
+puts "Choose game mode 'guess' or 'code'"
+mode = gets.chomp
 
 #init game
 #game = Mastermind.new(name1, name2, mode)
-game = Mastermind.new("CyBoRg", "Human")
+game = Mastermind.new(mode, "CyBoRg", "Human")
 #play until tie or win
 while !game.finished?
 	game.turn
