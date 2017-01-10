@@ -1,7 +1,6 @@
 ##TheOdinProject Mastermind
 
 class Mastermind
-
 	attr_accessor :round, :guess
 
 	def initialize(mode="guess", kiName, humanName)
@@ -14,10 +13,6 @@ class Mastermind
 		@feedback = Array.new(12) {Array.new(4)}
 		@guess = Array.new(12) {Array.new(4)}
 		@code = @ki.genCode
-		@gameOver = false
-		#@guess[round-1] = @human.guess(@round)
-		#compare
-		#@board.draw(@feedback, @guess, @round)
 	end
 	
 	def turn
@@ -32,8 +27,9 @@ class Mastermind
 	end
 	
 	def finished? 
+	#Check if finishd
 		if @feedback[@round-2] == ["!", "!", "!", "!"]
-			puts "congrats you won"
+			puts "##### Congrats you won #####"
 			return true
 		elsif @round > 12
 			puts "you lost"
@@ -42,22 +38,20 @@ class Mastermind
 	end
 	
 	def compare
+	#compare the actual guesses with the code save feedback in @feedback
 		i = 0
 		comp = []
 		@guess[@round-1].each do |val|
-			puts "Value: #{val}"
+			#puts "Value: #{val}"
 			if @code[i] == val
-				#puts @code[i] + "==" + val
-				puts "hits equal"
+				#puts "hits equal"
 				comp << "!"
 			elsif @code.include? val
-				#puts @code[i] + "contains" + val
-				puts "hits include"
+				#puts "hits include"
 				comp << "?"
 			else
-				#puts @code[i] + "not contains" + val
+				#puts "hits not in"
 				comp << "X"
-				puts "hits not in"
 			end
 			i += 1
 		end
@@ -78,10 +72,20 @@ class Mastermind
 			puts "Hi #{self.name} this is round #{round}"
 			guesses = []
 			for i in 1..4
-				puts "Please insert guess #{i}:"
-				guesses << gets.chomp
+				puts "Please insert your guess #{i}:"
+				input = gets.chomp
+				while !inputVal?(input) do
+					puts "Sorry, valid input is A..F"
+					puts "Please insert your guess #{i}:"
+					input = gets.chomp
+				end
+				guesses << input
 			end
 			guesses 
+		end
+		
+		def inputVal?(input)
+			input =~ /[A-F]/
 		end
 	end
 	
@@ -115,5 +119,3 @@ class Mastermind
 	end
 
 end
-
-#myGame = Mastermind.new("CyBoRg", "Human")
