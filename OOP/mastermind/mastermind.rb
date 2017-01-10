@@ -9,10 +9,27 @@ class Mastermind
 		@guess = Hash.new
 		@ki = Ki.new(kiName)
 		@human = Human.new(humanName)
+		self.welcome
+		self.gameMode(@mode)
 		@round = 1
 		@feedback = Array.new(12) {Array.new(4)}
 		@guess = Array.new(12) {Array.new(4)}
-		@code = @ki.genCode
+	end
+
+	def gameMode(mode)
+	#Select if guessing or Code
+		if mode == "guess"
+			@code = @ki.genCode
+		elsif mode == "code"
+			@code = @human.genCode
+		end
+	end
+	
+	def welcome
+		puts "###############################"
+		puts "#### Welcome to MasterMind ####"
+		puts "###############################"
+		puts "Hi #{@human.name} you play vs #{@ki.name}(KI)"
 	end
 	
 	def turn
@@ -70,22 +87,30 @@ class Mastermind
 
 		def guess(round)
 			puts "Hi #{self.name} this is round #{round}"
-			guesses = []
-			for i in 1..4
-				puts "Please insert your guess #{i}:"
-				input = gets.chomp
-				while !inputVal?(input) do
-					puts "Sorry, valid input is A..F"
-					puts "Please insert your guess #{i}:"
-					input = gets.chomp
-				end
-				guesses << input
-			end
-			guesses 
+			input = enterCode
+			puts "Input: #{input}"
+			inputVal?(input)
+			input.split("")
 		end
 		
 		def inputVal?(input)
-			input =~ /[A-F]/
+			while !(input =~ /[A-F]/ && input.length == 4) do
+				puts "Sorry, valid input is A..F, 4 chars"
+				puts "Please insert your guess:"
+				input = gets.chomp
+			end
+		end
+		
+		def enterCode
+			puts "Please enter your Code, 4 chars A..F (f.e. 'ABCD'):"
+			input = gets.chomp
+			return input
+		end
+		
+		def genCode
+			input = enterCode
+			inputVal?(input)
+			input.split("")
 		end
 	end
 	
