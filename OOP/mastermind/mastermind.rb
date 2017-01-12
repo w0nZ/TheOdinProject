@@ -4,7 +4,7 @@ class Mastermind
 	attr_accessor :round, :guess
 
 	def initialize(mode, kiName, humanName)
-		@cheat = true
+		@cheat = false
 		@mode = mode
 		@board = Board.new
 		@guess = Hash.new
@@ -45,11 +45,16 @@ class Mastermind
 	def turn
 		# Who needs to guess, ki or human, save guess, increment game round
 		if @mode=="guess"
+			#give round to human and save his guess
 			@guess[@round-1] = @human.guess(@round)
+			#let ki giveFeedback to human guess and save it
+			@feedback[@round-1] = @ki.giveFeedback(@guess[@round-1], @code)
 		else
-			@guess[@round-1] = @ki.guess(@round,@feedback[@round-2],@guess[@round-2])
+			#give round, last round Feedback and last round Guess to ki
+			@guess[@round-1] = @ki.guess(@round, @feedback[@round-2], @guess[@round-2])
+			#let human (build in method of class Player) giveFeedback and save to @feedback
+			@feedback[@round-1] = @human.giveFeedback(@guess[@round-1], @code)
 		end
-		compare
 		@board.draw(@feedback, @guess, @round)
 		@round += 1
 	end
@@ -68,32 +73,13 @@ class Mastermind
 	end
 	
 	def won?
+		# won if guessing and 4 "!" before round 13 or coding and round > 13
 		true if @feedback[@round-2] == ["!", "!", "!", "!"] && @mode == "guess" || @mode == "code" && @round > 13
 	end
 	
 	def lost?
+		# lost if opposite of won
 		true if @feedback[@round-2] == ["!", "!", "!", "!"] && @mode == "code" || @mode == "guess" && @round > 13
-	end
-	
-	def compare
-	#compare the actual guesses with the code saved in feedback
-		i = 0
-		comp = []
-		@guess[@round-1].each do |val|
-			#puts "Value: #{val}"
-			if @code[i] == val
-				#puts "hits equal"
-				comp << "!"
-			elsif @code.include? val
-				#puts "hits include"
-				comp << "?"
-			else
-				#puts "hits not in"
-				comp << "X"
-			end
-			i += 1
-		end
-		@feedback[@round-1] = comp
 	end
 	
 	class Player
@@ -103,6 +89,48 @@ class Mastermind
 		def initialize(name)
 			@name = name
 		end
+	
+		def blacksAndWhites(guess,code)
+			# blacks = match, whites ? contains
+			match = 0
+			contains = 0
+			unmatched_guess = []
+			unmatched_code = []
+			# check if guess equals code
+			guess.each_with_index do |g, i|
+				if g == code[i]
+					match +=1
+				# else save val from guess and code in unmatched
+				else
+					unmatched_guess << g
+					unmatched_code << code[i]
+				end
+			end
+			
+			#if index 
+			unmatched_guess.each do |g|
+				index = unmatched_code.index(g)
+				if !index.nil?
+					unmatched_code.delete_at(index)
+					contains += 1
+				end
+			end
+			return match, contains
+		end
+		
+		def giveFeedback(guess, code)
+			#puts "Name: #{self.name} Guess: #{guess} Code: #{code} "
+			match, contains = blacksAndWhites(guess, code)
+			comp = []
+			(1..match).each {comp << "!"}
+			(1..contains).each {comp << "?"}
+			if match+contains < 4
+				fill = 4 - match - contains
+				(1..fill).each {comp << "X"}
+			end
+			return comp
+		end
+		
 	end
 	
 	class Human < Player
@@ -141,6 +169,34 @@ class Mastermind
 	
 	class Ki < Player 
 	#Ki class from Player
+		def initialize(name)
+			@set = Array.new
+			@name = name
+			@possibilities = createSet
+		end
+	
+		def guess(round, feedback, guessLR)
+			print "#{self.name} Guess round #{round} with GuessLastRound: "
+			guessLR.each {|glr| print glr}
+			print " and feedbackLastRound: "
+			feedback.each {|f| print f}
+			updateSet(guessLR, feedback) if round > 1
+			if @possibilities.size == 1296
+				kiguess = ["A","A","B","B"]
+			else
+				kiguess = @possibilities.sample
+			end
+			#kiguess.each { |g| print g }
+			#print " =? "
+			#feedback.each { |f| print f }
+			return kiguess
+		end
+	
+		def updateSet(guess,feedback)	
+			@possibilities.delete_if {|p| giveFeedback(p, guess) != feedback}	
+			puts "Possibilities left: #{@possibilities.size}"
+		end
+	
 		def genCode
 			#gen 4 random chars and safe in arr
 			code = []
@@ -155,26 +211,20 @@ class Mastermind
 			(65 + rand(6)).chr
 		end
 		
-		def guess(round, feedback, guess)
-			#computer guess randomly (but keeping the ones that match exactly)
-			puts "\n#####KI #{self.name} guess. This is round #{round}"
-			#before round 2 there is no feedback, so the guess gets complety generated
-			if round > 1
-				kiguess = []
-				i=0
-				feedback.each do |f|
-					if f == "!"
-						kiguess[i] = guess[i]
-					else
-						kiguess[i] = genChar
+		def createSet
+			set = []
+			('A'..'F').each do |c1|
+				('A'..'F').each do |c2|
+					('A'..'F').each do |c3|
+						('A'..'F').each do |c4|
+							set << [c1, c2, c3, c4]
+						end
 					end
-					i += 1
 				end
-			else
-				kiguess = genCode
 			end
-			kiguess
-		end
+			return set
+		end		
+		
 	end
 	
 
