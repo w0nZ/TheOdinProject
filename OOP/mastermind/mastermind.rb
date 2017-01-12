@@ -1,5 +1,4 @@
 ##TheOdinProject Mastermind
-
 class Mastermind
 	attr_accessor :round, :guess
 
@@ -107,7 +106,8 @@ class Mastermind
 				end
 			end
 			
-			#if index 
+			#look if you can get a index in the code 4 one of the unmatced guesses. 
+			#If yes, remove the code-part and raise whites
 			unmatched_guess.each do |g|
 				index = unmatched_code.index(g)
 				if !index.nil?
@@ -119,8 +119,8 @@ class Mastermind
 		end
 		
 		def giveFeedback(guess, code)
-			#puts "Name: #{self.name} Guess: #{guess} Code: #{code} "
 			match, contains = blacksAndWhites(guess, code)
+			#take blacks and whites and put number of !,?,X in feedback array in number of balcks and whites
 			comp = []
 			(1..match).each {comp << "!"}
 			(1..contains).each {comp << "?"}
@@ -175,24 +175,28 @@ class Mastermind
 			@possibilities = createSet
 		end
 	
-		def guess(round, feedback, guessLR)
-			print "#{self.name} Guess round #{round} with GuessLastRound: "
-			guessLR.each {|glr| print glr}
-			print " and feedbackLastRound: "
-			feedback.each {|f| print f}
-			updateSet(guessLR, feedback) if round > 1
+		def guess(round, feedbackLR, guessLR)
+			#following 4 lines are for troubleshooting
+			#print "#{self.name} Guess round #{round} with GuessLastRound: "
+			#guessLR.each {|glr| print glr}
+			#print " and feedbackLastRound: "
+			#feedbackLR.each {|f| print f}
+			
+			#compare last round guess with feedback and update remove codes not possible
+			#starts with round 2
+			updateSet(guessLR, feedbackLR) if round > 1
 			if @possibilities.size == 1296
+				#if possibilities are still from init, do some init guess
 				kiguess = ["A","A","B","B"]
 			else
+				#else choose a sample from the updated set
 				kiguess = @possibilities.sample
 			end
-			#kiguess.each { |g| print g }
-			#print " =? "
-			#feedback.each { |f| print f }
 			return kiguess
 		end
 	
 		def updateSet(guess,feedback)	
+			#delete possibilite if feedback of possibility from set does not equal last round feedback
 			@possibilities.delete_if {|p| giveFeedback(p, guess) != feedback}	
 			puts "Possibilities left: #{@possibilities.size}"
 		end
