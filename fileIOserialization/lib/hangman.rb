@@ -4,11 +4,9 @@ class Hangman
 	def initialize()
 		require 'yaml'
 		@cheat = false
-		@secret_word = getWord
-		@guessed_word = anonymiseSecret
-		@guesses_left = 10
-		@incorrect_letters = []
+		welcome
 	end
+
 
 	def turn
 		outputStatus
@@ -30,7 +28,7 @@ class Hangman
 			false
 		end
 	end	
-
+	
 ## All else can be secret
 	private
 	def anonymiseSecret
@@ -45,6 +43,13 @@ class Hangman
 	end
 
 ## Some Output Methods
+	def welcome
+		puts "####\nHi Bro, Welcome to a round of Hangman"
+		puts "Wanna start a 'new' game or 'load' a already started one?"
+		input = gets.chomp
+		newOrLoad(input)
+	end 
+	
 	def outputStatus
 		puts "Hi Bro, you have #{@guesses_left} guesses left"
 		if @incorrect_letters.length > 0
@@ -67,7 +72,21 @@ class Hangman
 		puts "The secret word was '#{@secret_word.chomp}' and youn found out '#{@guessed_word.chomp}' so far"
 	end
 ### End Output Methods
+	def newOrLoad(input)
+		if input == "new"
+			initVars
+		else
+			loadGame
+		end
+	end
 
+	def initVars
+		@secret_word = getWord
+		@guessed_word = anonymiseSecret
+		@guesses_left = 10
+		@incorrect_letters = []
+	end
+	
 	def save?
 		begin
 			puts "Do you want to save and exit the game? (y/n)"
@@ -85,8 +104,47 @@ class Hangman
 		end
 	end
 	
+	def getFilename
+		puts "Please enter Filename:"
+		gets.chomp
+	end
+	
 	def saveGame
-		saveFile = File.open("save.yaml", "w")
+		Dir.mkdir("saves") unless Dir.exists? "saves"
+		Dir.chdir("saves")
+		saveFile = File.open(getFilename, "w")
+		saveFile.write to_yaml
+		saveFile.close
+	end
+
+	def listSavegames
+		games = Dir["../saves/*"]
+		puts "The following savegames exist:"
+		games.each { |game| puts game}
+	end
+	
+	def loadGame
+		listSavegames
+		filename = getFilename
+		loadFile = File.open("../saves/" + filename, "r")
+		from_yaml(loadFile)
+	end
+	
+	def to_yaml
+		YAML.dump ({
+			:secret_word => @secret_word,
+			:guessed_word => @guessed_word,
+			:guesses_left => @guesses_left,
+			:incorrect_letters => @incorrect_letters
+		})
+	end	
+
+	def from_yaml(string)
+		data = YAML.load string
+		@secret_word = data[:secret_word]
+		@guessed_word = data[:guessed_word]
+		@guesses_left = data[:guesses_left]
+		@incorrect_letters = data[:incorrect_letters]
 	end
 	
 	def wrongGuess(letter)
@@ -104,7 +162,7 @@ class Hangman
 	end
 	
 	def valLetter(letter)
-		if letter =~ /[a-z]/
+		if letter =~ /[a-z]/ && letter.length == 1
 			true
 		else
 			false
