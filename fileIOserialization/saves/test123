@@ -1,0 +1,10 @@
+---
+:secret_word: |
+  haft
+:guessed_word: |
+  _a_t
+:guesses_left: 7
+:incorrect_letters:
+- d
+- r
+- s

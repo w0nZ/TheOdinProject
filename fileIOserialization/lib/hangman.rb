@@ -110,15 +110,18 @@ class Hangman
 	end
 	
 	def saveGame
-		Dir.mkdir("saves") unless Dir.exists? "saves"
-		Dir.chdir("saves")
+		if !Dir.pwd.include? "saves"
+			Dir.mkdir("saves") unless Dir.exists? "saves"
+			Dir.chdir("saves")
+		end
 		saveFile = File.open(getFilename, "w")
 		saveFile.write to_yaml
 		saveFile.close
 	end
 
 	def listSavegames
-		games = Dir["../saves/*"]
+		Dir.chdir("saves") if !Dir.pwd.include? "saves" 
+		games = Dir["*"]
 		puts "The following savegames exist:"
 		games.each { |game| puts game}
 	end
